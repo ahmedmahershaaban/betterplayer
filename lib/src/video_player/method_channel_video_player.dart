@@ -308,6 +308,12 @@ class MethodChannelVideoPlayer extends VideoPlayerPlatform {
       },
     );
   }
+  Future<void> setAutoEnablePictureInPicture(int? textureId, bool autoEnable) async {
+    await _channel.invokeMethod('setAutoEnablePictureInPicture', {
+      'textureId': textureId,
+      'autoEnable': autoEnable,
+    });
+  }
 
   @override
   Future<void> stopPreCache(String url, String? cacheKey) {

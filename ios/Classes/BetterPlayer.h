@@ -35,6 +35,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic) float playerRate;
 @property(nonatomic) int overriddenDuration;
 @property(nonatomic) AVPlayerTimeControlStatus lastAvPlayerTimeControlStatus;
+@property(nonatomic, assign) bool autoEnablePip;
+@property(nonatomic, assign) bool hasRegisteredLifecycleObservers;
 - (void)play;
 - (void)pause;
 - (void)setIsLooping:(bool)isLooping;

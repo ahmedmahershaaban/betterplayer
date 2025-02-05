@@ -466,7 +466,27 @@ bool _remoteCommandsInitialized = false;
                 }
             }
             result(nil);
-        } else {
+        }
+            // ****************** NEW CODE: Toggle Auto Enable PiP START ******************
+        else if ([@"setAutoEnablePictureInPicture" isEqualToString:call.method]) {
+            // Retrieve arguments from the Flutter call.
+            NSDictionary* argsMap = call.arguments;
+
+            // Get the texture id from the arguments so we know which player instance to update.
+            int64_t textureId = ((NSNumber*)argsMap[@"textureId"]).unsignedIntegerValue;
+            BetterPlayer* player = _players[@(textureId)];
+
+            // The Flutter side sends a boolean value with the key "autoEnable".
+            BOOL autoEnable = [argsMap[@"autoEnable"] boolValue];
+
+            // Set the autoEnablePip flag on the BetterPlayer instance.
+            [player setAutoEnablePip:autoEnable];
+
+            result(nil);
+        }
+            // ****************** NEW CODE: Toggle Auto Enable PiP END ********************
+
+        else {
             result(FlutterMethodNotImplemented);
         }
     }

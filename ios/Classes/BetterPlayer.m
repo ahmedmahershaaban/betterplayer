@@ -33,6 +33,24 @@ AVPictureInPictureController *_pipController;
         _player.automaticallyWaitsToMinimizeStalling = false;
     }
     self._observersAdded = false;
+
+    // ****************** NEW CODE START ******************
+    // Register for lifecycle notifications if not already registered.
+    if (!self.hasRegisteredLifecycleObservers) {
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(appDidEnterBackground:)
+                                                     name:UIApplicationDidEnterBackgroundNotification
+                                                   object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(appWillEnterForeground:)
+                                                     name:UIApplicationWillEnterForegroundNotification
+                                                   object:nil];
+        self.hasRegisteredLifecycleObservers = YES;
+    }
+    // Optionally set autoEnablePip to YES by default.
+    self.autoEnablePip = YES;
+    // ****************** NEW CODE END ********************
+
     return self;
 }
 
@@ -320,6 +338,8 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
                        context:(void*)context {
 
     if ([path isEqualToString:@"rate"]) {
+        NSLog(@"[BetterPlayer] Player rate: %f, timeControlStatus: %ld", _player.rate, (long)_player.timeControlStatus);
+
         if (@available(iOS 10.0, *)) {
             if (_pipController.pictureInPictureActive == true){
                 if (_lastAvPlayerTimeControlStatus != [NSNull null] && _lastAvPlayerTimeControlStatus == _player.timeControlStatus){
@@ -488,6 +508,8 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
     _stalledCount = 0;
     _isStalledCheckStarted = false;
     _isPlaying = true;
+    NSLog(@"[BetterPlayer] play invoked. Player state: playing");
+
     [self updatePlayingState];
 }
 
@@ -618,7 +640,11 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
             _pipController = [[AVPictureInPictureController alloc] initWithPlayerLayer:self._playerLayer];
             _pipController.delegate = self;
         }
+        NSLog(@"[BetterPlayer] _pipController successfully created.");
     } else {
+
+        NSLog(@"[BetterPlayer] _pipController NOT created. Check conditions");
+
         // Fallback on earlier versions
     }
 }
@@ -637,6 +663,12 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
         UIViewController* vc = [[[UIApplication sharedApplication] keyWindow] rootViewController];
         self._playerLayer.frame = frame;
         self._playerLayer.needsDisplayOnBoundsChange = YES;
+
+        // Log the frame and view information
+        NSLog(@"[BetterPlayer] Adding AVPlayerLayer with frame: %@", NSStringFromCGRect(frame));
+        NSLog(@"[BetterPlayer] Root view frame: %@", NSStringFromCGRect(vc.view.frame));
+
+
         //  [self._playerLayer addObserver:self forKeyPath:readyForDisplayKeyPath options:NSKeyValueObservingOptionNew context:nil];
         [vc.view.layer addSublayer:self._playerLayer];
         vc.view.layer.needsDisplayOnBoundsChange = YES;
@@ -646,8 +678,11 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
         [self setupPipController];
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.2 * NSEC_PER_SEC)),
                        dispatch_get_main_queue(), ^{
+                NSLog(@"[BetterPlayer] Calling setPictureInPicture:true");
             [self setPictureInPicture:true];
         });
+    } else {
+        NSLog(@"[BetterPlayer] _player is nil in usePlayerLayer:");
     }
 }
 
@@ -753,6 +788,14 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
 }
 
 - (void)dispose {
+
+    // Remove lifecycle observers so that this instance no longer listens for notifications.
+    [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                    name:UIApplicationDidEnterBackgroundNotification
+                                                  object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                    name:UIApplicationWillEnterForegroundNotification
+                                                  object:nil];
     [self pause];
     [self disposeSansEventChannel];
     [_eventChannel setStreamHandler:nil];
@@ -760,5 +803,43 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
     [self setPictureInPicture:false];
     _disposed = true;
 }
+
+// ****************** NEW CODE: Notification Handlers START ******************
+// Called when the app enters the background (minimized)
+- (void)appDidEnterBackground:(NSNotification *)notification {
+    NSLog(@"[BetterPlayer] App did enter background");
+    
+    if (self.autoEnablePip) {
+        
+        NSLog(@"[BetterPlayer] self.autoEnablePip: True");
+//        // Automatically enter Picture-in-Picture (PiP) mode.
+//        // Here we use the view’s bounds for the PiP frame.
+//        CGRect pipFrame = self.view.bounds;
+//        if(CGRectIsEmpty(pipFrame)){
+//            pipFrame = [UIScreen mainScreen].bounds;
+//        }
+//        NSLog(@"[BetterPlayer] Enabling pip with frame: %@", NSStringFromCGRect(pipFrame));
+//        [self enablePictureInPicture:pipFrame];
+    }else{
+        
+        NSLog(@"[BetterPlayer] self.autoEnablePip: False");
+    }
+}
+
+// Called when the app enters the foreground
+- (void)appWillEnterForeground:(NSNotification *)notification {
+    NSLog(@"[BetterPlayer] appWillEnterForeground");
+     if (self.autoEnablePip) {
+         
+         NSLog(@"[BetterPlayer] self.autoEnablePip: True");
+//        // Automatically exit Picture-in-Picture (PiP) mode.
+//        [self disablePictureInPicture];
+//        [self setPictureInPicture:false];
+     }else{
+         
+         NSLog(@"[BetterPlayer] self.autoEnablePip: False");
+     }
+}
+// ****************** NEW CODE: Notification Handlers END ********************
 
 @end

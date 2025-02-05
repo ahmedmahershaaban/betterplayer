@@ -1063,6 +1063,7 @@ class BetterPlayerController {
     final bool isPipSupported =
         (await videoPlayerController!.isPictureInPictureSupported()) ?? false;
 
+    print('VideoPlayerController!.isPictureInPictureSupported ${isPipSupported}');
     if (isPipSupported) {
       _wasInFullScreenBeforePiP = _isFullScreen;
       _wasControlsEnabledBeforePiP = _controlsEnabled;
@@ -1108,6 +1109,14 @@ class BetterPlayerController {
       throw StateError("The data source has not been initialized");
     }
     return videoPlayerController!.disablePictureInPicture();
+  }
+
+  ///Enable or Disable Auto Enable Pip Mode
+  Future<void>? setAutoEnablePictureInPicture(bool autoEnable) {
+    if (videoPlayerController == null) {
+      throw StateError("The data source has not been initialized");
+    }
+    return videoPlayerController!.setAutoEnablePictureInPicture(autoEnable: autoEnable);
   }
 
   // ignore: use_setters_to_change_properties

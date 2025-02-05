@@ -149,6 +149,11 @@ abstract class VideoPlayerPlatform {
     throw UnimplementedError(
         'disablePictureInPicture() has not been implemented.');
   }
+  ///Disables PiP mode.
+  Future<void> setAutoEnablePictureInPicture(int? textureId, bool autoEnable) {
+    throw UnimplementedError(
+        'setAutoEnablePictureInPicture() has not been implemented.');
+  }
 
   Future<bool?> isPictureInPictureEnabled(int? textureId) {
     throw UnimplementedError(

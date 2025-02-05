@@ -591,6 +591,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
 
   Future<void> enablePictureInPicture(
       {double? top, double? left, double? width, double? height}) async {
+    print('[BetterPlayer DART] enablePictureInPicture() =>  textureId: $textureId, top:$top, left:$left, width:$width, height:$height');
     await _videoPlayerPlatform.enablePictureInPicture(
         textureId, top, left, width, height);
   }
@@ -599,6 +600,10 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
     await _videoPlayerPlatform.disablePictureInPicture(textureId);
   }
 
+  Future<void> setAutoEnablePictureInPicture({bool? autoEnable}) async {
+    print('[BetterPlayer DART] setAutoEnablePictureInPicture() => textureId = $textureId , autoEnable = ${autoEnable??false}');
+    await _videoPlayerPlatform.setAutoEnablePictureInPicture(textureId,autoEnable??false);
+  }
   void _updatePosition(Duration? position, {DateTime? absolutePosition}) {
     value = value.copyWith(position: _seekPosition ?? position);
     if (_seekPosition == null) {
@@ -607,9 +612,12 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
   }
 
   Future<bool?> isPictureInPictureSupported() async {
+    print('_textureID for isPictureInPictureSupported ${_textureId}');
     if (_textureId == null) {
       return false;
     }
+    print('_textureID != null ');
+
     return _videoPlayerPlatform.isPictureInPictureEnabled(_textureId);
   }
 
